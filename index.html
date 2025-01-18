@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lukishi's Flame Distribution Calculator</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Lukishi's Flame Distribution Calculator</h1>
+
+      <section class="stats">
+        <div class="input-group no-padding-left">
+          <label for="str">STR:</label>
+          <input type="number" id="str" placeholder="0" />
+        </div>
+        <div class="input-group">
+          <label for="dex">DEX:</label>
+          <input type="number" id="dex" placeholder="0" />
+        </div>
+        <div class="input-group">
+          <label for="int">INT:</label>
+          <input type="number" id="int" placeholder="0" />
+        </div>
+        <div class="input-group">
+          <label for="luk">LUK:</label>
+          <input type="number" id="luk" placeholder="0" />
+        </div>
+      </section>
+
+      <section class="basevalues">
+        <div class="basevalue">
+          <label for="baseValue1">Base Value 1 (For STR, DEX, INT, LUK):</label>
+          <input
+            type="number"
+            id="baseValue1"
+            placeholder="Enter base value 1 from whackybeanz (ex. 8)"
+          />
+        </div>
+        <div class="basevalue">
+          <label for="baseValue2"
+            >Base Value 2 (For STR+DEX, STR+INT, etc.):</label
+          >
+          <input
+            type="number"
+            id="baseValue2"
+            placeholder="Enter base value 1 from whackybeanz (ex. 4)"
+          />
+        </div>
+      </section>
+
+      <section class="calculations">
+        <button onclick="generateAndCalculate()">Calculate</button>
+        <section class="results" id="results"></section>
+        <div class="generated-table" id="generatedTable"></div>
+      </section>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
