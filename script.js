@@ -1,5 +1,35 @@
 let generatedTable = {}; // Store the dynamically generated table
 
+// Define the base values based on equipment level
+function getBaseValuesFromLevel(level) {
+  let baseValue1, baseValue2;
+
+  // Single stats base value 1
+  if (level >= 0 && level <= 19) baseValue1 = 1;
+  else if (level >= 20 && level <= 39) baseValue1 = 2;
+  else if (level >= 40 && level <= 59) baseValue1 = 3;
+  else if (level >= 60 && level <= 79) baseValue1 = 4;
+  else if (level >= 80 && level <= 99) baseValue1 = 5;
+  else if (level >= 100 && level <= 119) baseValue1 = 6;
+  else if (level >= 120 && level <= 139) baseValue1 = 7;
+  else if (level >= 140 && level <= 159) baseValue1 = 8;
+  else if (level >= 160 && level <= 179) baseValue1 = 9;
+  else if (level >= 180 && level <= 199) baseValue1 = 10;
+  else if (level >= 200 && level <= 229) baseValue1 = 11;
+  else baseValue1 = 12;
+
+  // Multiple stats base value 2
+  if (level >= 0 && level <= 39) baseValue2 = 1;
+  else if (level >= 40 && level <= 79) baseValue2 = 2;
+  else if (level >= 80 && level <= 119) baseValue2 = 3;
+  else if (level >= 120 && level <= 159) baseValue2 = 4;
+  else if (level >= 160 && level <= 199) baseValue2 = 5;
+  else if (level >= 200 && level <= 249) baseValue2 = 6;
+  else baseValue2 = 7;
+
+  return { baseValue1, baseValue2 };
+}
+
 // Generate the table based on base values
 function generateTable(baseValue1, baseValue2, stats) {
   const table = {
@@ -51,8 +81,10 @@ function generateTable(baseValue1, baseValue2, stats) {
 
 // Function to generate and display the table on the page
 function generateAndDisplayTable() {
-  const baseValue1 = parseInt(document.getElementById("baseValue1").value) || 0;
-  const baseValue2 = parseInt(document.getElementById("baseValue2").value) || 0;
+  const equipmentLevel =
+    parseInt(document.getElementById("equipmentLevel").value) || 0;
+
+  const { baseValue1, baseValue2 } = getBaseValuesFromLevel(equipmentLevel);
 
   const stats = {
     STR: parseInt(document.getElementById("str").value) || 0,
@@ -62,9 +94,17 @@ function generateAndDisplayTable() {
   };
 
   if (baseValue1 <= 0 || baseValue2 <= 0) {
-    alert("Please enter valid base values.");
+    alert("Please enter a valid equipment level.");
     return;
   }
+
+  // Display base values used in calculation
+  document.getElementById(
+    "baseValue1Display"
+  ).textContent = `Base Value 1: ${baseValue1}`;
+  document.getElementById(
+    "baseValue2Display"
+  ).textContent = `Base Value 2: ${baseValue2}`;
 
   // Generate the table using the entered base values and stats
   generatedTable = generateTable(baseValue1, baseValue2, stats);

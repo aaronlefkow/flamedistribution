@@ -29,23 +29,14 @@
         </div>
       </section>
 
-      <section class="basevalues">
-        <div class="basevalue">
-          <label for="baseValue1">Base Value 1 (For STR, DEX, INT, LUK):</label>
+      <section class="equipment-level">
+        <div class="input-group">
+          <label for="equipmentLevel">Equipment Level:</label>
           <input
             type="number"
-            id="baseValue1"
-            placeholder="Enter base value 1 from whackybeanz (ex. 8)"
-          />
-        </div>
-        <div class="basevalue">
-          <label for="baseValue2"
-            >Base Value 2 (For STR+DEX, STR+INT, etc.):</label
-          >
-          <input
-            type="number"
-            id="baseValue2"
-            placeholder="Enter base value 1 from whackybeanz (ex. 4)"
+            id="equipmentLevel"
+            placeholder="Enter equipment level (e.g., 150)"
+            min="1"
           />
         </div>
       </section>
@@ -54,6 +45,12 @@
         <button onclick="generateAndCalculate()">Calculate</button>
         <section class="results" id="results"></section>
         <div class="generated-table" id="generatedTable"></div>
+      </section>
+
+      <!-- Display base values used in calculation -->
+      <section class="base-values" id="baseValuesSection">
+        <p id="baseValue1Display"></p>
+        <p id="baseValue2Display"></p>
       </section>
 
       <section class="instructions">
