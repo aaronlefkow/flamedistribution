@@ -119,3 +119,8 @@ th {
   display: flex;
   flex-direction: column;
 }
+
+.tier-prefix {
+  color: #b0b0b0; /* Light grey color */
+  font-weight: normal; /* Optional: make the prefix less bold */
+}

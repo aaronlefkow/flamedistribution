@@ -154,11 +154,17 @@ function calculateStats() {
       for (const value of sortedValues) {
         const involvedStats = combination.split("+");
         if (involvedStats.every((stat) => stats[stat] >= value)) {
+          const tierIndex = table[combination].indexOf(value) + 1; // Find the tier index (1-based)
+          const tierPrefix = `${tierIndex}`; // Prefix for the result
+
           involvedStats.forEach((stat) => {
             stats[stat] -= value;
           });
           usedRows.add(combination);
-          currentCombination.push(`${combination} ${value}`);
+          currentCombination.push(
+            `<span class="tier-prefix">T${tierPrefix}</span> ${combination} ${value}`
+          );
+          // Add tiered result
 
           findCombination(table, stats, currentCombination);
 
@@ -180,7 +186,7 @@ function calculateStats() {
   bestCombination.forEach((result) => {
     const div = document.createElement("div");
     div.className = "result-item";
-    div.textContent = result;
+    div.innerHTML = result; // Use innerHTML to render HTML tags
     resultsDiv.appendChild(div);
   });
 
