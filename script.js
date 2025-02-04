@@ -1,36 +1,19 @@
+// RESOURCE EFFICIENT SCRIPT
+
 let generatedTable = {}; // Store the dynamically generated table
 
-// Define the base values based on equipment level
+// Lookup tables for base values
+const baseValue1Lookup = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+const baseValue2Lookup = [1, 2, 3, 4, 5, 6, 7];
+
+// Get base values efficiently
 function getBaseValuesFromLevel(level) {
-  let baseValue1, baseValue2;
-
-  // Single stats base value 1
-  if (level >= 0 && level <= 19) baseValue1 = 1;
-  else if (level >= 20 && level <= 39) baseValue1 = 2;
-  else if (level >= 40 && level <= 59) baseValue1 = 3;
-  else if (level >= 60 && level <= 79) baseValue1 = 4;
-  else if (level >= 80 && level <= 99) baseValue1 = 5;
-  else if (level >= 100 && level <= 119) baseValue1 = 6;
-  else if (level >= 120 && level <= 139) baseValue1 = 7;
-  else if (level >= 140 && level <= 159) baseValue1 = 8;
-  else if (level >= 160 && level <= 179) baseValue1 = 9;
-  else if (level >= 180 && level <= 199) baseValue1 = 10;
-  else if (level >= 200 && level <= 229) baseValue1 = 11;
-  else baseValue1 = 12;
-
-  // Multiple stats base value 2
-  if (level >= 0 && level <= 39) baseValue2 = 1;
-  else if (level >= 40 && level <= 79) baseValue2 = 2;
-  else if (level >= 80 && level <= 119) baseValue2 = 3;
-  else if (level >= 120 && level <= 159) baseValue2 = 4;
-  else if (level >= 160 && level <= 199) baseValue2 = 5;
-  else if (level >= 200 && level <= 249) baseValue2 = 6;
-  else baseValue2 = 7;
-
+  let baseValue1 = baseValue1Lookup[Math.min(Math.floor(level / 20), 11)];
+  let baseValue2 = baseValue2Lookup[Math.min(Math.floor(level / 40), 6)];
   return { baseValue1, baseValue2 };
 }
 
-// Generate the table based on base values
+// Generate the stat table
 function generateTable(baseValue1, baseValue2, stats) {
   const table = {
     STR: [],
@@ -45,45 +28,46 @@ function generateTable(baseValue1, baseValue2, stats) {
     "INT+LUK": [],
   };
 
-  // Generate values for each stat (STR, DEX, INT, LUK) using baseValue1
-  ["STR", "DEX", "INT", "LUK"].forEach((stat) => {
+  const statKeys = ["STR", "DEX", "INT", "LUK"];
+
+  // Populate single stats
+  statKeys.forEach((stat) => {
     if (stats[stat] > 0) {
-      for (let i = 0; i < 7; i++) {
-        const value = baseValue1 * (i + 1);
-        if (value <= stats[stat]) {
-          table[stat].push(value); // Only include valid values
+      for (let i = 1; i <= 7; i++) {
+        let value = baseValue1 * i;
+        if (value <= stats[stat]) table[stat].push(value);
+      }
+    }
+  });
+
+  // Populate stat combinations
+  const combos = [
+    ["STR", "DEX"],
+    ["STR", "INT"],
+    ["STR", "LUK"],
+    ["DEX", "INT"],
+    ["DEX", "LUK"],
+    ["INT", "LUK"],
+  ];
+
+  combos.forEach(([stat1, stat2]) => {
+    if (stats[stat1] > 0 && stats[stat2] > 0) {
+      for (let i = 1; i <= 7; i++) {
+        let value = baseValue2 * i;
+        if (value <= stats[stat1] && value <= stats[stat2]) {
+          table[`${stat1}+${stat2}`].push(value);
         }
       }
     }
   });
 
-  // Generate values for stat combinations (STR+DEX, etc.) using baseValue2
-  ["STR+DEX", "STR+INT", "STR+LUK", "DEX+INT", "DEX+LUK", "INT+LUK"].forEach(
-    (combination) => {
-      const involvedStats = combination.split("+");
-      if (stats[involvedStats[0]] > 0 && stats[involvedStats[1]] > 0) {
-        for (let i = 0; i < 7; i++) {
-          const value = baseValue2 * (i + 1);
-          if (
-            value <= stats[involvedStats[0]] &&
-            value <= stats[involvedStats[1]]
-          ) {
-            table[combination].push(value); // Only include valid values
-          }
-        }
-      }
-    }
-  );
-
-  console.log("Generated Table: ", table); // Log the generated table for debugging
   return table;
 }
 
-// Function to generate and display the table on the page
+// Generate and display the table
 function generateAndDisplayTable() {
   const equipmentLevel =
     parseInt(document.getElementById("equipmentLevel").value) || 0;
-
   const { baseValue1, baseValue2 } = getBaseValuesFromLevel(equipmentLevel);
 
   const stats = {
@@ -98,7 +82,7 @@ function generateAndDisplayTable() {
     return;
   }
 
-  // Display base values used in calculation
+  // Display base values
   document.getElementById(
     "baseValue1Display"
   ).textContent = `Base Value 1: ${baseValue1}`;
@@ -106,26 +90,41 @@ function generateAndDisplayTable() {
     "baseValue2Display"
   ).textContent = `Base Value 2: ${baseValue2}`;
 
-  // Generate the table using the entered base values and stats
+  // Generate the table
   generatedTable = generateTable(baseValue1, baseValue2, stats);
+  updateTableUI();
+}
 
+// Efficiently update the table UI
+function updateTableUI() {
   const tableDiv = document.getElementById("generatedTable");
-  tableDiv.innerHTML = ""; // Clear previous table
+  if (!tableDiv) return;
 
-  // Create table HTML
-  let tableHTML = `<table><thead><tr><th>Combination</th><th>Values</th></tr></thead><tbody>`;
+  let tableHTML = `
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Combination</th>
+          <th>Values</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
 
-  Object.keys(generatedTable).forEach((combination) => {
-    tableHTML += `<tr><td>${combination}</td><td>${generatedTable[
-      combination
-    ].join(", ")}</td></tr>`;
+  Object.entries(generatedTable).forEach(([key, values]) => {
+    tableHTML += `
+      <tr>
+        <td>${key}</td>
+        <td>${values.length ? values.join(", ") : "-"}</td>
+      </tr>
+    `;
   });
 
   tableHTML += `</tbody></table>`;
   tableDiv.innerHTML = tableHTML;
 }
 
-// Function to calculate the stats based on the rules provided
+// Find the best stat combination
 function calculateStats() {
   const stats = {
     STR: parseInt(document.getElementById("str").value) || 0,
@@ -134,74 +133,104 @@ function calculateStats() {
     LUK: parseInt(document.getElementById("luk").value) || 0,
   };
 
-  const usedRows = new Set();
   let bestCombination = [];
-  let bestCombinationLength = Infinity;
-  let remainingStats = { ...stats };
+  let bestLength = Infinity;
+  let memo = {};
 
-  function findCombination(table, stats, currentCombination) {
-    if (Object.values(stats).every((stat) => stat === 0)) {
-      if (currentCombination.length < bestCombinationLength) {
+  // Function to recursively find the best combination
+  function findCombination(
+    remainingStats,
+    currentCombination,
+    usedCombinations
+  ) {
+    let key = JSON.stringify(remainingStats);
+    if (memo[key]) return memo[key];
+
+    // If all stats are covered, check if we have a better (smaller) combination
+    if (Object.values(remainingStats).every((val) => val === 0)) {
+      if (currentCombination.length < bestLength) {
         bestCombination = [...currentCombination];
-        bestCombinationLength = currentCombination.length;
+        bestLength = currentCombination.length;
       }
       return;
     }
 
-    for (const combination in table) {
-      if (usedRows.has(combination)) continue;
-      const sortedValues = [...table[combination]].sort((a, b) => b - a); // Sort values in descending order
-      for (const value of sortedValues) {
-        const involvedStats = combination.split("+");
-        if (involvedStats.every((stat) => stats[stat] >= value)) {
-          const tierIndex = table[combination].indexOf(value) + 1; // Find the tier index (1-based)
-          const tierPrefix = `${tierIndex}`; // Prefix for the result
+    let validCombinations = [];
 
-          involvedStats.forEach((stat) => {
-            stats[stat] -= value;
-          });
-          usedRows.add(combination);
-          currentCombination.push(
-            `<span class="tier-prefix">T${tierPrefix}</span> ${combination} ${value}`
-          );
-          // Add tiered result
-
-          findCombination(table, stats, currentCombination);
-
-          involvedStats.forEach((stat) => {
-            stats[stat] += value;
-          });
-          usedRows.delete(combination);
-          currentCombination.pop();
+    // Try to find combinations that cover the most stats first
+    for (const [combination, values] of Object.entries(generatedTable)) {
+      let involvedStats = combination.split("+");
+      for (let value of values) {
+        if (involvedStats.every((stat) => remainingStats[stat] >= value)) {
+          // Only use this combination if we haven't already used it
+          if (!usedCombinations[combination + value]) {
+            validCombinations.push({ combination, value });
+          }
         }
       }
     }
+
+    // Sort valid combinations by the number of stats they cover and the size of the values
+    validCombinations.sort((a, b) => {
+      const aCoverage = a.combination.split("+").length;
+      const bCoverage = b.combination.split("+").length;
+      const aValue = a.value;
+      const bValue = b.value;
+
+      // Prioritize combinations covering more stats, then larger values
+      return bCoverage - aCoverage || bValue - aValue;
+    });
+
+    // Try each valid combination and recurse
+    for (let { combination, value } of validCombinations) {
+      let newStats = { ...remainingStats };
+      let involvedStats = combination.split("+");
+      involvedStats.forEach((stat) => (newStats[stat] -= value));
+
+      // Mark this combination as used
+      let newUsedCombinations = { ...usedCombinations };
+      newUsedCombinations[combination + value] = true;
+
+      // Determine the tier for this value
+      const tier = getTierForValue(combination, value);
+
+      // Recursively find combinations
+      findCombination(
+        newStats,
+        [
+          ...currentCombination,
+          `<span class="tier-prefix">${tier}</span> ${combination} ${value}`,
+        ],
+        newUsedCombinations
+      );
+    }
+
+    memo[key] = bestCombination;
   }
 
-  findCombination(generatedTable, remainingStats, []);
+  // Function to determine the tier based on equipment level and value
+  function getTierForValue(combination, value) {
+    let baseValues = generatedTable[combination];
+    let tier = baseValues.indexOf(value) + 1; // Get the index and add 1 for tier
 
-  // Display results
+    return `T${tier}`;
+  }
+
+  // Start the combination search
+  findCombination(stats, [], {});
+
+  // Update the results UI with the best combination
   const resultsDiv = document.getElementById("results");
-  resultsDiv.innerHTML = ""; // Clear previous results
-  bestCombination.forEach((result) => {
-    const div = document.createElement("div");
-    div.className = "result-item";
-    div.innerHTML = result; // Use innerHTML to render HTML tags
-    resultsDiv.appendChild(div);
-  });
-
-  // Display remaining stats if any
-  if (bestCombination.length === 0) {
-    const remainingDiv = document.createElement("div");
-    remainingDiv.className = "result-item";
-    remainingDiv.textContent = `Remaining stats: ${JSON.stringify(
-      remainingStats
-    )}`;
-    resultsDiv.appendChild(remainingDiv);
-  }
+  resultsDiv.innerHTML = bestCombination.length
+    ? bestCombination
+        .map((result) => `<div class="result-item">${result}</div>`)
+        .join("")
+    : `<div class="result-item">Remaining stats: ${JSON.stringify(
+        stats
+      )}</div>`;
 }
 
-// Function to generate the table and calculate stats
+// Generate table and calculate stats together
 function generateAndCalculate() {
   generateAndDisplayTable();
   calculateStats();
